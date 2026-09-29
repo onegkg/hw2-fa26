@@ -1,0 +1,16 @@
+{
+  "name": "COSI 106B - HW2",
+  "image": "ghcr.io/brandeis-cosi-106b/hw2-fa26:latest",
+  "remoteUser": "vscode",
+  "forwardPorts": [3000],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "vitest.explorer",
+        "DigitalBrainstem.javascript-ejs-support",
+        "github.vscode-github-actions"
+      ]
+    }
+  }
+}

@@ -1,0 +1,48 @@
+<%- include('_header') %>
+
+<h1>Course Catalog</h1>
+<p><%= courses.length %> courses available across all departments.</p>
+
+<!-- Task 7 Option C: /courses?q=... shows only the matching courses -->
+<form method="get" action="/courses">
+  <input
+    type="search"
+    name="q"
+    id="course-search"
+    placeholder="Search by name, ID, or department…"
+    style="margin-bottom:1rem; padding:0.4rem 0.6rem; width:100%; border:1px solid #ccc; border-radius:4px; font-size:1rem;"
+  />
+</form>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Dept</th>
+      <th>Credits</th>
+      <th>Prerequisites</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% for (const course of courses) { %>
+    <tr class="dept-<%= course.department %>">
+      <td><code><%= course.id %></code></td>
+      <td><%= courseTitle(course) %></td>
+      <td><span class="dept-badge <%= course.department %>"><%= course.department %></span></td>
+      <td><%= course.credits %></td>
+      <td>
+        <% if (course.prereqs.length) { %>
+          <% for (const p of course.prereqs) { %>
+            <span class="tag"><%= p.id %></span>
+          <% } %>
+        <% } else { %>
+          <span class="empty">none</span>
+        <% } %>
+      </td>
+    </tr>
+    <% } %>
+  </tbody>
+</table>
+
+<%- include('_footer') %>

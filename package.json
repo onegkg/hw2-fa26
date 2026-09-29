@@ -1,0 +1,43 @@
+{
+  "name": "hw2",
+  "version": "1.0.0",
+  "description": "COSI 106B HW2 – Constraint-Aware Course Planner",
+  "type": "module",
+  "scripts": {
+    "clean": "rm -rf db.sqlite db.sqlite-journal test.sqlite test.sqlite-journal build",
+    "db:init": "tsx src/db/migrate.ts",
+    "db:seed": "tsx src/db/seed.ts",
+    "solve": "tsx src/solver/solve.ts",
+    "start": "tsx src/web/server.ts",
+    "test": "vitest run",
+    "lint": "eslint src/ tests/",
+    "typecheck": "tsc --noEmit",
+    "quality": "npm run lint && npm run typecheck && npm run test"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.10.0",
+    "ejs": "^3.1.10",
+    "express": "^5.2.1",
+    "z3-solver": "^4.13.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/ejs": "^3.1.5",
+    "@types/express": "^5.0.6",
+    "@types/jsdom": "^30.0.0",
+    "@types/node": "^22.0.0",
+    "@types/supertest": "^6.0.2",
+    "eslint": "^9.0.0",
+    "jsdom": "^30.1.1",
+    "supertest": "^7.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.0.0",
+    "vite": "^8.3.1",
+    "vitest": "^5.0.2"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}

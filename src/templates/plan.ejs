@@ -1,0 +1,52 @@
+<%- include('_header') %>
+
+<h1>Generated Plan</h1>
+
+<% if (empty) { %>
+  <div class="warning">
+    No plan has been generated yet. Run <code>npm run solve</code> first.
+  </div>
+<% } else { %>
+  <p>
+    The solver assigned <%= semesters.length %> semesters. Review the plan
+    below — if any course appears before a course it depends on, there is a bug
+    in the pipeline.
+  </p>
+
+  <!-- Task 7 Option B: show a .warning block for each of the plan's `warnings`. -->
+
+  <% for (const sem of semesters) { %>
+  <div class="semester-block">
+    <div class="semester-header">
+      <h2>Semester <%= sem.number %></h2>
+      <span class="credits-badge"><%= sem.totalCredits %> / 18 credits</span>
+    </div>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Name</th><th>Dept</th><th>Credits</th><th>Prerequisites</th></tr>
+      </thead>
+      <tbody>
+        <% for (const course of sem.courses) { %>
+        <tr class="dept-<%= course.department %>">
+          <td><code><%= course.course_id %></code></td>
+          <td><%= courseTitle(course) %></td>
+          <td><span class="dept-badge <%= course.department %>"><%= course.department %></span></td>
+          <td><%= course.credits %></td>
+          <td>
+            <% if (course.prereqs && course.prereqs.length > 0) { %>
+              <% for (const p of course.prereqs) { %>
+                <span class="tag"><%= p %></span>
+              <% } %>
+            <% } else { %>
+              <span class="empty">none</span>
+            <% } %>
+          </td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+<% } %>
+
+<%- include('_footer') %>
