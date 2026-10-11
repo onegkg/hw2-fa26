@@ -15,33 +15,36 @@ import type { ConstraintFn } from "./types.js";
  * Every course must be placed in a valid semester (1–4).
  */
 export const semesterBounds: ConstraintFn = (ctx, vars, data) =>
-  data.courses.flatMap((course) => {
-    const s = vars.get(course.id)!;
-    return [s.ge(ctx.Int.val(1)), s.le(ctx.Int.val(4))];
-  });
+    data.courses.flatMap((course) => {
+        const s = vars.get(course.id)!;
+        return [s.ge(ctx.Int.val(1)), s.le(ctx.Int.val(4))];
+    });
 
 /**
  * Each prerequisite must be completed in a strictly earlier semester than
  * the course that requires it.
  */
 export const prerequisiteOrder: ConstraintFn = (ctx, vars, data) =>
-  data.prereqs.map(({ course_id, prereq_id }) =>
-    vars.get(prereq_id)!.le(vars.get(course_id)!),
-  );
+    data.prereqs.map(({ course_id, prereq_id }) =>
+        vars.get(prereq_id)!.le(vars.get(course_id)!), // should be less than not le
+    );
 
 /**
  * The total credit load in any single semester must not exceed 18 credits.
  */
 export const semesterCreditLimit: ConstraintFn = (ctx, vars, data) => {
-  const MAX_CREDITS = 18;
-  return Array.from({ length: 4 }, (_, i) => {
-    const s = i + 1;
-    const terms = data.courses.map((c) =>
-      ctx.If(vars.get(c.id)!.eq(ctx.Int.val(s)), ctx.Int.val(c.credits), ctx.Int.val(0)),
-    );
-    const total = terms.reduce((acc: any, x) => acc.add(x));
-    return total.le(ctx.Int.val(MAX_CREDITS));
-  });
+    const MAX_CREDITS = 18;
+    return Array.from({ length: 4 }, (_, i) => {
+        /// semester (?)
+        const s = i + 1;
+        const terms = data.courses.map((c) =>
+            // if course is in the current semester, add its credits, otherwise 0
+            ctx.If(vars.get(c.id)!.eq(ctx.Int.val(s)), ctx.Int.val(c.credits), ctx.Int.val(0)), // shouldn't this get c.semester?
+        );
+        // sum the credits
+        const total = terms.reduce((acc: any, x) => acc.add(x));
+        return total.le(ctx.Int.val(MAX_CREDITS));
+    });
 };
 
 /**
@@ -49,15 +52,16 @@ export const semesterCreditLimit: ConstraintFn = (ctx, vars, data) => {
  * Currently inactive — add it to activeConstraints to enable it.
  */
 export const maxCoursesPerSemester: ConstraintFn = (ctx, vars, data) => {
-  const MAX_COURSES = 4;
-  return Array.from({ length: 4 }, (_, i) => {
-    const s = i + 1;
-    const terms = data.courses.map((c) =>
-      ctx.If(vars.get(c.id)!.eq(ctx.Int.val(s)), ctx.Int.val(1), ctx.Int.val(0)),
-    );
-    const count = terms.reduce((acc: any, x) => acc.add(x));
-    return count.le(ctx.Int.val(MAX_COURSES));
-  });
+    const MAX_COURSES = 4;
+    return Array.from({ length: 4 }, (_, i) => {
+        const s = i + 1;
+        const terms = data.courses.map((c) =>
+            // if course is in the current semester, add one, else don't
+            ctx.If(vars.get(c.id)!.eq(ctx.Int.val(s)), ctx.Int.val(1), ctx.Int.val(0)), // i think same issue as last fn?
+        );
+        const count = terms.reduce((acc: any, x) => acc.add(x));
+        return count.le(ctx.Int.val(MAX_COURSES));
+    });
 };
 
 /**
@@ -73,8 +77,8 @@ export const studentConstraint: ConstraintFn = () => [];
 // ---------------------------------------------------------------------------
 
 export const activeConstraints: ConstraintFn[] = [
-  semesterBounds,
-  prerequisiteOrder,
-  semesterCreditLimit,
-  // maxCoursesPerSemester,
+    semesterBounds,
+    prerequisiteOrder,
+    semesterCreditLimit,
+    // maxCoursesPerSemester,
 ];

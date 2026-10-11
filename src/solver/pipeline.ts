@@ -22,74 +22,76 @@ import type { Prerequisite, PlanRow } from "../db/queries.js";
 import { activeConstraints } from "./constraints.js";
 
 export async function runSolver(db: Db): Promise<PlanRow[]> {
-  // ---------------------------------------------------------------------------
-  // Step 1: Read courses and prerequisites
-  // ---------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------
+    // Step 1: Read courses and prerequisites
+    // ---------------------------------------------------------------------------
 
-  const courses = getCourses(db);
+    const courses = getCourses(db);
 
-  const prereqs = all<Prerequisite>(
-    db,
-    `SELECT p.course_id, p.prereq_id
+    // only captures intradepartmental prereqs for some reason
+    const prereqs = all<Prerequisite>(
+        db,
+        `SELECT p.course_id, p.prereq_id
      FROM prerequisites p
      JOIN courses c  ON c.id  = p.course_id
      JOIN courses r  ON r.id  = p.prereq_id
      WHERE c.department = r.department`,
-  );
-
-  // ---------------------------------------------------------------------------
-  // Step 2: Initialize Z3
-  // ---------------------------------------------------------------------------
-
-  const { Context } = await init();
-  const ctx = new Context("main");
-
-  // One integer variable per course: which semester (1–4) is it assigned to?
-  const semVars = new Map(courses.map((c) => [c.id, ctx.Int.const(`sem_${c.id}`)]));
-
-  // ---------------------------------------------------------------------------
-  // Step 3: Apply constraints
-  // ---------------------------------------------------------------------------
-
-  const solver = new ctx.Solver();
-
-  for (const constraintFn of activeConstraints) {
-    const assertions = constraintFn(ctx, semVars, { courses, prereqs });
-    for (const assertion of assertions) {
-      solver.add(assertion);
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Step 4: Solve
-  // ---------------------------------------------------------------------------
-
-  console.log(`Solving with ${courses.length} courses and ${prereqs.length} prerequisites…`);
-  const status = await solver.check();
-
-  if (status !== "sat") {
-    throw new Error(
-      `Solver returned '${status}'. No valid plan exists under the current constraints.\n` +
-        `Try removing a constraint from activeConstraints in src/solver/constraints.ts.`,
     );
-  }
 
-  // ---------------------------------------------------------------------------
-  // Step 5: Parse the model
-  // ---------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------
+    // Step 2: Initialize Z3
+    // ---------------------------------------------------------------------------
 
-  const model = solver.model();
+    const { Context } = await init();
+    const ctx = new Context("main");
 
-  const planRows: PlanRow[] = courses.map((c) => ({
-    course_id: c.id,
-    semester: Number(model.eval(semVars.get(c.id)!, true).toString()) - 1,
-  }));
+    // One integer variable per course: which semester (1–4) is it assigned to?
+    const semVars = new Map(courses.map((c) => [c.id, ctx.Int.const(`sem_${c.id}`)]));
 
-  // ---------------------------------------------------------------------------
-  // Step 6: Write plan to database
-  // ---------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------
+    // Step 3: Apply constraints
+    // ---------------------------------------------------------------------------
 
-  clearAndInsertPlan(db, planRows.filter((r) => r.semester >= 1));
+    const solver = new ctx.Solver();
 
-  return planRows;
+    // don't really understand what's going on here
+    for (const constraintFn of activeConstraints) {
+        const assertions = constraintFn(ctx, semVars, { courses, prereqs });
+        for (const assertion of assertions) {
+            solver.add(assertion);
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Step 4: Solve
+    // ---------------------------------------------------------------------------
+
+    console.log(`Solving with ${courses.length} courses and ${prereqs.length} prerequisites…`);
+    const status = await solver.check();
+
+    if (status !== "sat") {
+        throw new Error(
+            `Solver returned '${status}'. No valid plan exists under the current constraints.\n` +
+            `Try removing a constraint from activeConstraints in src/solver/constraints.ts.`,
+        );
+    }
+
+    // ---------------------------------------------------------------------------
+    // Step 5: Parse the model
+    // ---------------------------------------------------------------------------
+
+    const model = solver.model();
+
+    const planRows: PlanRow[] = courses.map((c) => ({
+        course_id: c.id,
+        semester: Number(model.eval(semVars.get(c.id)!, true).toString()), // convert to string then to number to escape the Z3 specific types
+    }));
+
+    // ---------------------------------------------------------------------------
+    // Step 6: Write plan to database
+    // ---------------------------------------------------------------------------
+
+    clearAndInsertPlan(db, planRows.filter((r) => r.semester >= 1));
+
+    return planRows;
 }
