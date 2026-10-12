@@ -29,7 +29,7 @@
         <% for (const course of sem.courses) { %>
         <tr class="dept-<%= course.department %>">
           <td><code><%= course.course_id %></code></td>
-          <td><%= courseTitle(course) %></td>
+          <td><%- courseTitle(course) %></td>
           <td><span class="dept-badge <%= course.department %>"><%= course.department %></span></td>
           <td><%= course.credits %></td>
           <td>

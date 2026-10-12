@@ -2,10 +2,79 @@
 
 <h1>Plan Statistics</h1>
 
-<!-- Task 6: display the plan statistics here.
-     Variables from the route: creditsPerSemester, coursesPerDept, busiestSemester,
-     busiestCourses (the courses in the busiest semester), avgCreditsPerSemester.
-     Use tables or the semester-block style from plan.ejs to present the data.
-     Use the department color coding (dept-badge, dept-COSI, ...) for consistency. -->
+<% if (!busiestSemester || creditsPerSemester.length === 0) { %>
+  <div class="warning">
+    No plan has been generated yet. Run <code>npm run solve</code> first.
+  </div>
+<% } else { %>
+  <p>
+    Average credits per semester: <strong><%= avgCreditsPerSemester.toFixed(1) %></strong>
+  </p>
 
+  <h2>Busiest Semester</h2>
+  <div class="semester-block">
+    <div class="semester-header">
+      <h2>Semester <%= busiestSemester.semester %></h2>
+      <span class="credits-badge"><%= busiestSemester.total_credits %> credits</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Dept</th>
+          <th>Credits</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% for (const course of busiestCourses) { %>
+        <tr class="dept-<%= course.department %>">
+          <td><code><%= course.id %></code></td>
+          <td><%- courseTitle(course) %></td>
+          <td><span class="dept-badge <%= course.department %>"><%= course.department %></span></td>
+          <td><%= course.credits %></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Credits per Semester</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Semester</th>
+        <th>Total Credits</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% for (const sem of creditsPerSemester) { %>
+      <tr>
+        <td>Semester <%= sem.semester %></td>
+        <td><%= sem.total_credits %></td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+
+  <h2>Courses by Department</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Department</th>
+        <th>Course Count</th>
+        <th>Total Credits</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% for (const dept of coursesPerDept) { %>
+      <tr class="dept-<%= dept.department %>">
+        <td><span class="dept-badge <%= dept.department %>"><%= dept.department %></span></td>
+        <td><%= dept.course_count %></td>
+        <td><%= dept.total_credits %></td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+<% } %>
 <%- include('_footer') %>

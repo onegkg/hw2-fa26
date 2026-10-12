@@ -16,10 +16,10 @@ For each task, mark your status: **Done**, **Partial**, or **Not Done**. Add bri
 
 | Task | Status | Notes (optional) |
 |------|--------|------------------|
-| 0. Looked around before fixing anything | | |
-| 1. First failure fixed (the semester-range test passes) | | |
-| 2. Second failure fixed (the `prerequisiteOrder` tests pass) | | |
-| 3. Third failure fixed (every schedule invariant test passes) | | |
+| 0. Looked around before fixing anything | done | |
+| 1. First failure fixed (the semester-range test passes) | done | |
+| 2. Second failure fixed (the `prerequisiteOrder` tests pass) | done | |
+| 3. Third failure fixed (every schedule invariant test passes) | done | |
 | 4. Course titles appear the way the catalog spells them | | |
 | 5. Your own constraint, with a test that fails without it | | |
 | 6. `/stats` dashboard | | |
@@ -45,7 +45,11 @@ Answer briefly (1–3 sentences each):
 
 In Task 0 you looked around before fixing anything. After that, the handout pointed you to each failure in turn and named the layer it lived in. Choose the failure that showed up farthest from where it started, and trace its path: where the mistake was, what it handed to the next layer, and where you finally saw something go wrong. It may help to consider what you noticed (or missed) during Task 0, and how you would have found the right layer if the handout hadn't named it.
 
+Task 2's issue showed up furthest from the point of failure. The problem was in the constraint `prerequisiteOrder` which used `le()` instead of `lt()`. The erroneous constraint then got passed into the solver, which solved based on it, propogating the error into the tests and into the display. I initially saw the issue in the failing tests. I had looked through the failing tests before doing my task 0 walkthrough so I kept an eye out for places where the failing tests might be going wrong. This led me to read the prereq constraint carefully and notice that it was using le rather than lt. You can see in my [notes.md](notes.md) that I noticed this error in my initial walkthrough. Since I already had a theory of what was wrong, the task naming the location of the issue didn't help me much. In fact, for tasks 2 and 3 I already had a theory of where the issue was and for task 1, I didn't really know what "\[t]he TypeScript that carries data between the other layers" really meant so none of the location info was actually especially useful to me.
+
 Be honest about what you actually did, not what you think you *should* have done.
+
+
 
 ### B: What You Didn't Write
 

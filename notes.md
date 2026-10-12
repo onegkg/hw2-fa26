@@ -47,3 +47,20 @@
 - cosi106 has semester 0
 - Doesn't appear in web view which makes sense
 - I think was just that there was a conversion to 0 indexed on deserialization to ts code
+
+### Post solving
+- Looked at the newly solved schedule. Makes it even more clear that prereqs are being treated as coreqs. But that now makes sense why there were only 3 semesters.
+
+# Task 2
+- Thought it was switching le to lt in the prereq constraint but tests are still failing so need to look again
+- Ok actually it was passing I was just looking at the wrong tests...
+- I'm still confused why the other prereq based tests are failing but might just be for a later task
+    - nvm it's because of the interdepartmental prereq
+
+# Task 3
+- This was the interdepartmental prereq that I was confused about earlier. Simple fix since I had already noticed the error in the initial look-through
+### Post solving
+- looking at newly solved schedule, the `&` in 21a is not being correctly decoded from the html encoding.
+
+# Task 4
+- Just changed the ejs to use literal (`<%- %>`) instead of escaping (`<%= %>`)

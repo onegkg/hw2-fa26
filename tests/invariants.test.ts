@@ -106,5 +106,18 @@ describe("schedule invariants", () => {
 // Task 5: a test that the plan follows your constraint. It must fail if you
 // take studentConstraint out of activeConstraints (try it!).
 describe("Task 5", () => {
-    it.todo("the plan follows my constraint");
+    it("no semester has more than one MATH class", () => {
+
+        const courses = getCourses(db);
+        const courseToDepartment = new Map(courses.map((c) => [c.id, c.department]))
+        const mathCoursesInSem = new Map<number, number>();
+        for (const row of plan) {
+            const isMath = courseToDepartment.get(row.course_id) === "MATH" ? 1 : 0;
+            mathCoursesInSem.set(row.semester, (mathCoursesInSem.get(row.semester) ?? 0) + isMath);
+        }
+
+        for (const [sem, total] of mathCoursesInSem) {
+            expect(total, `Semester ${sem} has ${total} math courses`).toBeLessThanOrEqual(1);
+        }
+    });
 });

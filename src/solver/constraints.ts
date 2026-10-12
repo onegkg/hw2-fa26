@@ -25,8 +25,9 @@ export const semesterBounds: ConstraintFn = (ctx, vars, data) =>
  * the course that requires it.
  */
 export const prerequisiteOrder: ConstraintFn = (ctx, vars, data) =>
+    // task 2
     data.prereqs.map(({ course_id, prereq_id }) =>
-        vars.get(prereq_id)!.le(vars.get(course_id)!), // should be less than not le
+        vars.get(prereq_id)!.lt(vars.get(course_id)!), // should be less than not le
     );
 
 /**
@@ -35,11 +36,11 @@ export const prerequisiteOrder: ConstraintFn = (ctx, vars, data) =>
 export const semesterCreditLimit: ConstraintFn = (ctx, vars, data) => {
     const MAX_CREDITS = 18;
     return Array.from({ length: 4 }, (_, i) => {
-        /// semester (?)
+        // semester
         const s = i + 1;
         const terms = data.courses.map((c) =>
             // if course is in the current semester, add its credits, otherwise 0
-            ctx.If(vars.get(c.id)!.eq(ctx.Int.val(s)), ctx.Int.val(c.credits), ctx.Int.val(0)), // shouldn't this get c.semester?
+            ctx.If(vars.get(c.id)!.eq(ctx.Int.val(s)), ctx.Int.val(c.credits), ctx.Int.val(0)),
         );
         // sum the credits
         const total = terms.reduce((acc: any, x) => acc.add(x));
@@ -57,7 +58,7 @@ export const maxCoursesPerSemester: ConstraintFn = (ctx, vars, data) => {
         const s = i + 1;
         const terms = data.courses.map((c) =>
             // if course is in the current semester, add one, else don't
-            ctx.If(vars.get(c.id)!.eq(ctx.Int.val(s)), ctx.Int.val(1), ctx.Int.val(0)), // i think same issue as last fn?
+            ctx.If(vars.get(c.id)!.eq(ctx.Int.val(s)), ctx.Int.val(1), ctx.Int.val(0)),
         );
         const count = terms.reduce((acc: any, x) => acc.add(x));
         return count.le(ctx.Int.val(MAX_COURSES));
@@ -65,11 +66,16 @@ export const maxCoursesPerSemester: ConstraintFn = (ctx, vars, data) => {
 };
 
 /**
- * Task 5: your constraint. Replace this with a scheduling rule of your own
- * (the comment above each constraint says what its rule is), then add it to
- * activeConstraints.
+    * No semester may have more than one course from the MATH department
  */
-export const studentConstraint: ConstraintFn = () => [];
+export const studentConstraint: ConstraintFn = (ctx, vars, data) => Array.from({ length: 4 }, (_, i) => {
+    // get semester number
+    const s = i + 1;
+    const terms = data.courses.map((c) => ctx.If(vars.get(c.id)!.eq(ctx.Int.val(s)), c.department === "MATH" ? ctx.Int.val(1) : ctx.Int.val(0), ctx.Int.val(0)));
+    const count = terms.reduce((acc: any, x) => acc.add(x));
+    return count.le(ctx.Int.val(1));
+})
+
 
 // ---------------------------------------------------------------------------
 // Toggle constraints by commenting entries in or out.
@@ -81,4 +87,5 @@ export const activeConstraints: ConstraintFn[] = [
     prerequisiteOrder,
     semesterCreditLimit,
     // maxCoursesPerSemester,
+    studentConstraint
 ];

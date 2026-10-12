@@ -28,14 +28,13 @@ export async function runSolver(db: Db): Promise<PlanRow[]> {
 
     const courses = getCourses(db);
 
-    // only captures intradepartmental prereqs for some reason
+    // task 3
     const prereqs = all<Prerequisite>(
         db,
         `SELECT p.course_id, p.prereq_id
      FROM prerequisites p
      JOIN courses c  ON c.id  = p.course_id
-     JOIN courses r  ON r.id  = p.prereq_id
-     WHERE c.department = r.department`,
+     JOIN courses r  ON r.id  = p.prereq_id`,
     );
 
     // ---------------------------------------------------------------------------
@@ -71,8 +70,8 @@ export async function runSolver(db: Db): Promise<PlanRow[]> {
 
     if (status !== "sat") {
         throw new Error(
-            `Solver returned '${status}'. No valid plan exists under the current constraints.\n` +
-            `Try removing a constraint from activeConstraints in src/solver/constraints.ts.`,
+            `Solver returned '${status}'.No valid plan exists under the current constraints.\n` +
+            `Try removing a constraint from activeConstraints in src / solver / constraints.ts.`,
         );
     }
 
@@ -84,6 +83,7 @@ export async function runSolver(db: Db): Promise<PlanRow[]> {
 
     const planRows: PlanRow[] = courses.map((c) => ({
         course_id: c.id,
+        // task 1
         semester: Number(model.eval(semVars.get(c.id)!, true).toString()), // convert to string then to number to escape the Z3 specific types
     }));
 
