@@ -4,4 +4,4 @@
  */
 export type Task7Option = "A" | "B" | "C" | "D";
 
-export const TASK7_OPTION: Task7Option | undefined = undefined;
+export const TASK7_OPTION: Task7Option | undefined = "C";

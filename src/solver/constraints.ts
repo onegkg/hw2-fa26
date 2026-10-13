@@ -9,6 +9,7 @@
  * matching the ConstraintFn signature, then add it to activeConstraints.
  */
 
+import { Prerequisite } from "../db/queries.js";
 import type { ConstraintFn } from "./types.js";
 
 /**
